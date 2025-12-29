@@ -1,0 +1,112 @@
+[workspace]
+members = [
+    "crates/streamdown-core",
+    "crates/streamdown-ansi",
+    "crates/streamdown-config",
+    "crates/streamdown-parser",
+    "crates/streamdown-syntax",
+    "crates/streamdown-render",
+    "crates/streamdown-plugin"
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Streamdown Contributors"]
+license = "MIT"
+repository = "https://github.com/streamdown/streamdown-rs"
+keywords = ["markdown", "terminal", "streaming", "ansi", "cli"]
+categories = ["command-line-utilities", "text-processing"]
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+
+# Unicode handling
+unicode-width = "0.2"
+
+# Syntax highlighting
+syntect = "5.2"
+
+# Configuration
+directories = "5.0"
+
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+
+# Error handling
+thiserror = "2.0"
+
+# Text processing
+regex = "1.10"
+
+# Terminal
+crossterm = "0.28"
+
+# Encoding
+base64 = "0.22"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Async/IO
+atty = "0.2"
+
+# Unix PTY
+nix = { version = "0.29", features = ["fs", "poll", "term", "signal", "process"] }
+
+# Internal crates
+streamdown-core = { path = "crates/streamdown-core" }
+streamdown-ansi = { path = "crates/streamdown-ansi" }
+streamdown-config = { path = "crates/streamdown-config" }
+streamdown-parser = { path = "crates/streamdown-parser" }
+streamdown-syntax = { path = "crates/streamdown-syntax" }
+streamdown-render = { path = "crates/streamdown-render" }
+streamdown-plugin = { path = "crates/streamdown-plugin" }
+
+[package]
+name = "streamdown"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "A streaming markdown renderer for modern terminals (Rust port of Streamdown)"
+readme = "README.md"
+homepage = "https://github.com/streamdown/streamdown-rs"
+documentation = "https://docs.rs/streamdown"
+rust-version = "1.70"
+
+[dependencies]
+streamdown-core.workspace = true
+streamdown-ansi.workspace = true
+streamdown-config.workspace = true
+streamdown-parser.workspace = true
+streamdown-syntax.workspace = true
+streamdown-render.workspace = true
+streamdown-plugin.workspace = true
+clap.workspace = true
+crossterm.workspace = true
+log.workspace = true
+env_logger.workspace = true
+atty.workspace = true
+toml.workspace = true
+regex.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+nix.workspace = true
+
+[dev-dependencies]
+insta = { version = "1.40", features = ["redactions"] }
+proptest = "1.5"
+criterion = "0.5"
+terminal_size = "0.4"
+
+[[bin]]
+name = "sd"
+path = "src/main.rs"

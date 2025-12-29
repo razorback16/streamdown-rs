@@ -1,0 +1,37 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+
+                                    Welcome
+
+This is a complex document with various formatting.
+
+
+                                  Code Example                                  
+
+▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+[python]                                                                        
+def greet(name):                                                               
+    return f"Hello, {name}!"                                                   
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+
+                                List of Features                                
+
+• Headings
+• Code blocks
+• Lists
+    ◦ Nested items
+• Tables
+
+  Feature                               │  Status                               
+────────────────────────────────────────────────────────────────────────────────
+  Parser                                │  Done                                 
+  Render                                │  Done                                 
+
+│ A wise quote.
+
+────────────────────────────────────────────────────────────────────────────────
+
+The end.

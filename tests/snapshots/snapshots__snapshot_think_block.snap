@@ -1,0 +1,8 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+┌─ thinking ─
+│ This is internal reasoning.
+│ It should be styled differently.
+└

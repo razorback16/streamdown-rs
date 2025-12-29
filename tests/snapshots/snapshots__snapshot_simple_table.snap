@@ -1,0 +1,8 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+  Name                                  │  Age                                  
+────────────────────────────────────────────────────────────────────────────────
+  Alice                                 │  30                                   
+  Bob                                   │  25

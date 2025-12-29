@@ -1,0 +1,6 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+│ This is a quote.
+│ It spans multiple lines.

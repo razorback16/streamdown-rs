@@ -1,0 +1,7 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+│ Level 1
+│ │ Level 2
+│ │ │ Level 3

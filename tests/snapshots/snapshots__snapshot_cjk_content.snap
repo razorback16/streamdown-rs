@@ -1,0 +1,11 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+
+                                    你好世界
+
+这是一段中文文本。
+
+• 列表项 1
+• 列表项 2

@@ -1,0 +1,13 @@
+[package]
+name = "streamdown-plugin"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Plugin system for streamdown extensibility"
+
+[dependencies]
+streamdown-core.workspace = true
+streamdown-config.workspace = true
+regex.workspace = true

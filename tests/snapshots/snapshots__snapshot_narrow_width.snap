@@ -1,0 +1,5 @@
+---
+source: tests/snapshots.rs
+expression: output
+---
+This is a long paragraph that should wrap at a narrow width to test the text wrapping functionality.
