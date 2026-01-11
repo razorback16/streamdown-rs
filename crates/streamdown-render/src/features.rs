@@ -93,10 +93,7 @@ pub fn savebrace(code: &str) -> io::Result<PathBuf> {
     if path.exists() {
         let meta = std::fs::symlink_metadata(&path)?;
         if meta.file_type().is_symlink() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Refusing to write to symlink",
-            ));
+            return Err(io::Error::other("Refusing to write to symlink"));
         }
 
         // Clear file if it's too large to prevent unbounded growth
@@ -273,9 +270,11 @@ mod tests {
 
     #[test]
     fn test_effective_width() {
-        let mut features = RenderFeatures::default();
-        features.fixed_width = Some(80);
-        features.margin = 2;
+        let features = RenderFeatures {
+            fixed_width: Some(80),
+            margin: 2,
+            ..Default::default()
+        };
         assert_eq!(features.effective_width(), 76); // 80 - 2*2
     }
 

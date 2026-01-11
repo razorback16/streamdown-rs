@@ -151,6 +151,6 @@ mod tests {
     fn test_long_heading_wraps() {
         let long_text = "This is a very long heading that should wrap to multiple lines";
         let lines = render_heading(1, long_text, 20, "", &default_style());
-        assert!(lines.len() >= 1);
+        assert!(!lines.is_empty());
     }
 }

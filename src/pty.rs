@@ -49,7 +49,7 @@ mod unix {
     use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
     use nix::unistd::{dup2, fork, read, write, ForkResult, Pid};
     use std::ffi::CString;
-    use std::io::{Read, Write};
+    use std::io::Write;
     use std::os::fd::{AsFd, AsRawFd, BorrowedFd, OwnedFd, RawFd};
 
     /// A PTY session wrapping a subprocess.
@@ -78,7 +78,7 @@ mod unix {
             // Save original terminal settings
             // SAFETY: STDIN_FILENO is always valid for the process lifetime
             let stdin_fd = unsafe { BorrowedFd::borrow_raw(libc::STDIN_FILENO) };
-            let original_termios = termios::tcgetattr(&stdin_fd).ok();
+            let original_termios = termios::tcgetattr(stdin_fd).ok();
 
             // Open PTY pair
             let OpenptyResult { master, slave } =
@@ -134,10 +134,10 @@ mod unix {
                         raw.local_flags.remove(LocalFlags::ECHO);
                         raw.local_flags.remove(LocalFlags::ISIG);
                         // Set minimum chars and timeout
-                        raw.control_chars[libc::VMIN as usize] = 1;
-                        raw.control_chars[libc::VTIME as usize] = 0;
+                        raw.control_chars[libc::VMIN] = 1;
+                        raw.control_chars[libc::VTIME] = 0;
 
-                        let _ = termios::tcsetattr(&stdin_fd, SetArg::TCSANOW, &raw);
+                        let _ = termios::tcsetattr(stdin_fd, SetArg::TCSANOW, &raw);
                     }
 
                     // Enable auto-wrap
@@ -165,7 +165,7 @@ mod unix {
         /// Poll for available input with a timeout.
         pub fn poll(&self, timeout: Duration) -> PollResult {
             let stdin_fd = libc::STDIN_FILENO;
-            let master_fd = self.master.as_raw_fd();
+            let _master_fd = self.master.as_raw_fd();
 
             let mut fds = [
                 PollFd::new(
@@ -205,7 +205,7 @@ mod unix {
         pub fn read_master(&mut self, buf: &mut [u8]) -> io::Result<usize> {
             match read(self.master.as_raw_fd(), buf) {
                 Ok(n) => Ok(n),
-                Err(nix::errno::Errno::EAGAIN) | Err(nix::errno::Errno::EWOULDBLOCK) => Ok(0),
+                Err(nix::errno::Errno::EAGAIN) => Ok(0),
                 Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
             }
         }
@@ -238,7 +238,7 @@ mod unix {
             match read(libc::STDIN_FILENO, &mut buf) {
                 Ok(0) => Ok(None),
                 Ok(_) => Ok(Some(buf[0])),
-                Err(nix::errno::Errno::EAGAIN) | Err(nix::errno::Errno::EWOULDBLOCK) => Ok(None),
+                Err(nix::errno::Errno::EAGAIN) => Ok(None),
                 Err(e) => Err(io::Error::new(io::ErrorKind::Other, e)),
             }
         }
@@ -289,6 +289,7 @@ mod unix {
         }
 
         /// Get the master file descriptor.
+        #[allow(dead_code)]
         pub fn master_fd(&self) -> RawFd {
             self.master.as_raw_fd()
         }
@@ -300,7 +301,7 @@ mod unix {
             if let Some(ref orig) = self.original_termios {
                 // SAFETY: STDIN_FILENO is always valid for the process lifetime
                 let stdin_fd = unsafe { BorrowedFd::borrow_raw(libc::STDIN_FILENO) };
-                let _ = termios::tcsetattr(&stdin_fd, SetArg::TCSADRAIN, orig);
+                let _ = termios::tcsetattr(stdin_fd, SetArg::TCSADRAIN, orig);
             }
 
             // Wait for child if still alive

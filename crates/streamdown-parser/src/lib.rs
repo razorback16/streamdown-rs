@@ -684,13 +684,11 @@ impl Parser {
             let inner = caps.get(1).map(|m| m.as_str()).unwrap_or("");
 
             // Check if this is a separator row
-            if TABLE_SEP_RE.is_match(inner) {
-                if self.table_state == Some(TableState::Header) {
-                    self.table_state = Some(TableState::Body);
-                    self.state.in_table = Some(Code::Body);
-                    self.events.push(ParseEvent::TableSeparator);
-                    return true;
-                }
+            if TABLE_SEP_RE.is_match(inner) && self.table_state == Some(TableState::Header) {
+                self.table_state = Some(TableState::Body);
+                self.state.in_table = Some(Code::Body);
+                self.events.push(ParseEvent::TableSeparator);
+                return true;
             }
 
             let cells: Vec<String> = inner.split('|').map(|s| s.trim().to_string()).collect();

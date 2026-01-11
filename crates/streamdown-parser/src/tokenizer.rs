@@ -22,7 +22,7 @@ static LINK_RE: LazyLock<Regex> =
 static IMAGE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"!\[([^\]]*)\]\(([^\)]+)\)").unwrap());
 
-/// Regex for matching footnotes: [^1] or [^1]:
+/// Regex for matching footnotes: `[^1]` or `[^1]:`
 static FOOTNOTE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[\^(\d+)\]:?").unwrap());
 
 /// Regex for matching inline code spans: `code` or ``code``
@@ -78,7 +78,7 @@ pub enum Token {
     /// An image: ![alt](url)
     Image { alt: String, url: String },
 
-    /// A footnote reference: [^1]
+    /// A footnote reference: `[^1]`
     Footnote(u32),
 }
 

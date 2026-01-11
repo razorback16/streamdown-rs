@@ -359,7 +359,7 @@ mod tests {
     #[test]
     fn test_render_code_start_pretty() {
         let lines = render_code_start(Some("rust"), 80, "", &default_style(), true);
-        assert!(lines.len() >= 1);
+        assert!(!lines.is_empty());
         // Should have ▄ border
         assert!(lines[0].contains(CODEPAD_TOP));
     }
@@ -367,7 +367,7 @@ mod tests {
     #[test]
     fn test_render_code_start_not_pretty() {
         let lines = render_code_start(Some("rust"), 80, "", &default_style(), false);
-        assert!(lines.len() >= 1);
+        assert!(!lines.is_empty());
         // Should NOT have ▄ border (space-based instead)
         assert!(!lines[0].contains(CODEPAD_TOP));
     }

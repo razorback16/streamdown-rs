@@ -129,19 +129,21 @@ fn load_config(cli: &Cli) -> io::Result<Config> {
 
 /// Create render features from CLI options.
 fn create_features(cli: &Cli) -> RenderFeatures {
-    let mut features = RenderFeatures::default();
+    let (fixed_width, width_wrap) = if cli.width > 0 {
+        (Some(cli.width as usize), false)
+    } else {
+        (None, true)
+    };
 
-    features.pretty_pad = !cli.no_pretty_pad;
-    features.pretty_broken = cli.pretty_broken;
-    features.clipboard = cli.clipboard;
-    features.savebrace = cli.savebrace;
-
-    if cli.width > 0 {
-        features.fixed_width = Some(cli.width as usize);
-        features.width_wrap = false;
+    RenderFeatures {
+        pretty_pad: !cli.no_pretty_pad,
+        pretty_broken: cli.pretty_broken,
+        clipboard: cli.clipboard,
+        savebrace: cli.savebrace,
+        fixed_width,
+        width_wrap,
+        ..Default::default()
     }
-
-    features
 }
 
 /// Process input from stdin.

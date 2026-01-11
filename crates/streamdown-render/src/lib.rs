@@ -813,8 +813,10 @@ mod tests {
 
     #[test]
     fn test_render_with_custom_style() {
-        let mut style = RenderStyle::default();
-        style.bright = "#ff0000".to_string();
+        let style = RenderStyle {
+            bright: "#ff0000".to_string(),
+            ..Default::default()
+        };
 
         let mut output = Vec::new();
         let mut renderer = Renderer::with_style(&mut output, 80, style);

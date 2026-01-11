@@ -200,7 +200,7 @@ pub fn text_wrap(
 
         // Update style tracking
         for code in codes.iter().skip(
-            if word.starts_with(&codes.get(0).cloned().unwrap_or_default()) {
+            if word.starts_with(&codes.first().cloned().unwrap_or_default()) {
                 1
             } else {
                 0
