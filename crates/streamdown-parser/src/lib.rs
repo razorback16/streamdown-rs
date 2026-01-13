@@ -315,17 +315,19 @@ impl Parser {
     /// This handles markdown that's indented in the input stream.
     fn strip_first_indent(&mut self, line: &str) -> String {
         // Set first_indent from the very first non-empty line
+        // Use character count, not byte count, to handle multi-byte whitespace
         if self.state.first_indent.is_none() && !line.trim().is_empty() {
-            let indent = line.len() - line.trim_start().len();
+            let indent = line.chars().take_while(|c| c.is_whitespace()).count();
             self.state.first_indent = Some(indent);
         }
 
         // Only strip if first_indent is > 0
         if let Some(first_indent) = self.state.first_indent {
             if first_indent > 0 {
-                let current_indent = line.len() - line.trim_start().len();
+                let current_indent = line.chars().take_while(|c| c.is_whitespace()).count();
                 if current_indent >= first_indent {
-                    return line[first_indent..].to_string();
+                    // Skip first_indent characters (not bytes) to avoid UTF-8 boundary issues
+                    return line.chars().skip(first_indent).collect();
                 }
             }
         }
@@ -939,5 +941,34 @@ mod tests {
         assert!(ParseEvent::CodeBlockStart { language: None, indent: 0 }.is_block());
         assert!(ParseEvent::Text("x".to_string()).is_inline());
         assert!(ParseEvent::Bold("x".to_string()).is_inline());
+    }
+
+    #[test]
+    fn test_first_indent_stripping_multibyte_whitespace() {
+        // This test reproduces the byte boundary bug in strip_first_indent.
+        //
+        // Line 1: "  # Hello" = 2 ASCII spaces (2 bytes) + "# Hello"
+        // Buggy code calculates first_indent = 2 (bytes)
+        //
+        // Line 2: "　World" = 1 fullwidth space (3 bytes) + "World"
+        // Buggy code checks: current_indent (3 bytes) >= first_indent (2 bytes) ✓
+        // Then tries: line[2..] which is INSIDE the fullwidth space!
+        // Panic: "byte index 2 is not a char boundary; it is inside '　'"
+        let mut parser = Parser::new();
+
+        // First line: 2 ASCII spaces = 2 bytes indent
+        let line1 = "  # Hello";
+        assert_eq!(line1.len() - line1.trim_start().len(), 2);
+        let _ = parser.parse_line(line1);
+
+        // Second line: 1 fullwidth space (3 bytes) - byte 2 is NOT a char boundary
+        let line2 = "　World";
+        assert!(!line2.is_char_boundary(2)); // Verify byte 2 is invalid
+
+        // This will panic with buggy code: "byte index 2 is not a char boundary"
+        let events = parser.parse_line(line2);
+
+        // Should produce valid output without panicking
+        assert!(!events.is_empty());
     }
 }
