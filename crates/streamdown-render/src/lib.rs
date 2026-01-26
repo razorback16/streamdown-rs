@@ -372,15 +372,17 @@ impl<W: Write> Renderer<W> {
                 // Render with background
                 let bg = bg_color(&self.style.dark);
                 let margin = self.left_margin();
+                let trimmed = highlighted.trim_end();
                 let padding_needed = self
                     .current_width()
-                    .saturating_sub(streamdown_ansi::utils::visible_length(&highlighted));
+                    .saturating_sub(streamdown_ansi::utils::visible_length(trimmed));
 
                 self.writeln(&format!(
-                    "{}{}{}{}{}",
+                    "{}{}{}{}{}{}",
                     margin,
                     bg,
-                    highlighted.trim_end(),
+                    trimmed,
+                    bg,
                     " ".repeat(padding_needed),
                     RESET
                 ))?;
