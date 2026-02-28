@@ -133,6 +133,10 @@ pub struct RenderStyle {
     pub image_marker: String,
     /// Color for footnote markers
     pub footnote: String,
+
+    // Layout
+    /// Whether h1/h2 headings should be centered (default: true)
+    pub heading_centered: bool,
 }
 
 impl Default for RenderStyle {
@@ -156,6 +160,7 @@ impl Default for RenderStyle {
             link_url: "grey".to_string(),
             image_marker: "cyan".to_string(),
             footnote: "cyan".to_string(),
+            heading_centered: true,
         }
     }
 }
