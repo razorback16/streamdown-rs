@@ -49,6 +49,7 @@ pub use text::{WrappedText, simple_wrap, split_text, text_wrap};
 use std::io::Write;
 
 use serde::{Deserialize, Serialize};
+use streamdown_config::ComputedStyle;
 use streamdown_ansi::codes::{
     BOLD_OFF, BOLD_ON, DIM_ON, ITALIC_OFF, ITALIC_ON, RESET, STRIKEOUT_OFF, STRIKEOUT_ON,
     UNDERLINE_OFF, UNDERLINE_ON,
@@ -160,6 +161,35 @@ impl Default for RenderStyle {
             link_url: "grey".to_string(),
             image_marker: "cyan".to_string(),
             footnote: "cyan".to_string(),
+            heading_centered: true,
+        }
+    }
+}
+
+impl RenderStyle {
+    /// Create a RenderStyle from a ComputedStyle.
+    ///
+    /// Maps the semantic color roles from ComputedStyle to the
+    /// element-specific fields in RenderStyle.
+    pub fn from_computed(computed: &ComputedStyle) -> Self {
+        Self {
+            h1: computed.head.clone(),
+            h2: computed.head.clone(),
+            h3: computed.bright.clone(),
+            h4: computed.bright.clone(),
+            h5: computed.grey.clone(),
+            h6: computed.grey.clone(),
+            code_bg: computed.dark.clone(),
+            code_label: computed.bright.clone(),
+            bullet: computed.symbol.clone(),
+            table_header_bg: computed.mid.clone(),
+            table_border: computed.grey.clone(),
+            blockquote_border: computed.grey.clone(),
+            think_border: computed.grey.clone(),
+            hr: computed.grey.clone(),
+            link_url: computed.bright.clone(),
+            image_marker: computed.symbol.clone(),
+            footnote: computed.bright.clone(),
             heading_centered: true,
         }
     }
