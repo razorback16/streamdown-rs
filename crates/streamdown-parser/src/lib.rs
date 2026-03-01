@@ -219,6 +219,8 @@ pub struct Parser {
     events: Vec<ParseEvent>,
     /// Track previous empty line for collapsing
     prev_was_empty: bool,
+    /// Deferred list close: set on empty line, resolved on next non-empty line
+    list_pending_close: bool,
 }
 
 impl Default for Parser {
@@ -237,6 +239,7 @@ impl Parser {
             table_state: None,
             events: Vec::new(),
             prev_was_empty: false,
+            list_pending_close: false,
         }
     }
 
@@ -250,6 +253,7 @@ impl Parser {
             table_state: None,
             events: Vec::new(),
             prev_was_empty: false,
+            list_pending_close: false,
         }
     }
 
@@ -301,40 +305,61 @@ impl Parser {
         self.prev_was_empty = false;
         self.state.last_line_empty = false;
 
+        // Classify what this line matches — used to consolidate
+        // resolve_pending_list_close() into a single call site.
+        enum LineMatch {
+            None,
+            ListItem,
+            OtherConstruct,
+        }
+
         // Check for space-indented code BEFORE first-indent stripping
         // (so we don't accidentally strip the 4-space indent)
         if self.try_parse_space_code(line, was_prev_empty) {
+            self.resolve_pending_list_close();
             return self.take_events();
         }
 
         // Now apply first-indent stripping for other constructs
         let line = self.strip_first_indent(line);
 
-        // Try block-level constructs in order
-        if self.try_parse_code_fence(&line) {
-            return self.take_events();
-        }
-        if self.try_parse_block(&line) {
-            return self.take_events();
-        }
-        if self.try_parse_heading(&line) {
-            return self.take_events();
-        }
-        if self.try_parse_hr(&line) {
-            return self.take_events();
-        }
-        if self.try_parse_list_item(&line) {
-            return self.take_events();
-        }
-        if self.try_parse_table(&line) {
-            return self.take_events();
+        // Try block-level constructs in order.
+        // Each try_parse_* has side effects, so the identical return values are intentional.
+        #[allow(clippy::if_same_then_else)]
+        let matched = if self.try_parse_code_fence(&line) {
+            LineMatch::OtherConstruct
+        } else if self.try_parse_block(&line) {
+            LineMatch::OtherConstruct
+        } else if self.try_parse_heading(&line) {
+            LineMatch::OtherConstruct
+        } else if self.try_parse_hr(&line) {
+            LineMatch::OtherConstruct
+        } else if self.try_parse_list_item(&line) {
+            LineMatch::ListItem
+        } else if self.try_parse_table(&line) {
+            LineMatch::OtherConstruct
+        } else {
+            LineMatch::None
+        };
+
+        match matched {
+            LineMatch::ListItem => {
+                // List continues — cancel the pending close
+                self.list_pending_close = false;
+            }
+            _ => {
+                // Any non-list-item line resolves a deferred list close
+                self.resolve_pending_list_close();
+            }
         }
 
-        // Exit special contexts for plain text
-        self.exit_block_contexts();
+        if let LineMatch::None = matched {
+            // Exit special contexts for plain text
+            self.exit_block_contexts();
+            // Parse as inline content
+            self.parse_inline_content(&line);
+        }
 
-        // Parse as inline content
-        self.parse_inline_content(&line);
         self.take_events()
     }
 
@@ -384,9 +409,9 @@ impl Parser {
             self.events.push(ParseEvent::BlockquoteEnd);
         }
 
-        // End list if in one
+        // Defer list close — a subsequent list item will keep the list alive
         if self.state.in_list {
-            self.exit_list_context();
+            self.list_pending_close = true;
         }
 
         // End table if in one
@@ -400,7 +425,20 @@ impl Parser {
         self.take_events()
     }
 
+    /// Resolve a deferred list close — called when a non-list construct follows
+    /// an empty line. Emits ListEnd and clears list state.
+    fn resolve_pending_list_close(&mut self) {
+        if self.list_pending_close {
+            self.list_pending_close = false;
+            if self.state.in_list {
+                self.exit_list_context();
+            }
+        }
+    }
+
     /// Exit block contexts when encountering plain text.
+    /// Note: `resolve_pending_list_close()` is always called before this method,
+    /// so we only need to handle the non-deferred list close here.
     fn exit_block_contexts(&mut self) {
         if self.state.in_list {
             self.exit_list_context();
@@ -774,6 +812,7 @@ impl Parser {
             }
         }
 
+        self.list_pending_close = false;
         if self.state.in_list {
             self.exit_list_context();
         }
@@ -795,6 +834,7 @@ impl Parser {
         self.table_state = None;
         self.events.clear();
         self.prev_was_empty = false;
+        self.list_pending_close = false;
     }
 }
 
